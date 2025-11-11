@@ -1,7 +1,7 @@
 [project]
 name = "imagegen-mcp"
-version = "0.1.0"
-description = "MCP server for AI image generation and manipulation"
+version = "0.2.0"
+description = "MCP server for AI image generation and manipulation with multiple providers"
 authors = [{ name = "Zack Jordan" }]
 requires-python = ">=3.10"
 dependencies = [

@@ -33,9 +33,8 @@ class ImageProvider(str, Enum):
     """Supported image generation providers."""
 
     OPENAI = "openai"
-    # Future providers can be added here
-    # STABILITY = "stability"
-    # HUGGINGFACE = "huggingface"
+    POLLINATIONS = "pollinations"
+    HUGGINGFACE = "huggingface"
 
 
 # Initialize MCP server
@@ -46,6 +45,7 @@ def get_api_key(provider: ImageProvider) -> Optional[str]:
     """Get API key for specified provider from environment."""
     key_map = {
         ImageProvider.OPENAI: "OPENAI_API_KEY",
+        ImageProvider.HUGGINGFACE: "HUGGINGFACE_API_KEY",
     }
     return os.getenv(key_map.get(provider, ""))
 
@@ -129,6 +129,146 @@ async def generate_image_openai(
         "size": size,
         "prompt": prompt,
         "provider": "openai",
+    }
+
+
+async def generate_image_pollinations(
+    prompt: str,
+    size: str = "1024x1024",
+    save_path: Optional[Path] = None,
+    seed: Optional[int] = None,
+    model: str = "flux",
+) -> dict[str, Any]:
+    """
+    Generate image using Pollinations.ai (free, no API key required).
+
+    Args:
+        prompt: Text description of the image to generate
+        size: Image dimensions (format: WIDTHxHEIGHT, e.g., "1024x1024")
+        save_path: Optional path to save the generated image
+        seed: Optional seed for reproducibility
+        model: AI model to use (default: "flux", alternatives: "turbo")
+
+    Returns:
+        Dictionary with image_path, url, and metadata
+    """
+    import urllib.parse
+
+    # Parse size
+    width, height = map(int, size.split("x"))
+
+    # URL encode the prompt
+    encoded_prompt = urllib.parse.quote(prompt)
+
+    # Build URL with parameters
+    url_parts = [f"https://image.pollinations.ai/prompt/{encoded_prompt}"]
+    params = [f"width={width}", f"height={height}", f"model={model}", "nologo=true"]
+
+    if seed is not None:
+        params.append(f"seed={seed}")
+
+    image_url = f"{url_parts[0]}?{'&'.join(params)}"
+
+    # Download image
+    async with httpx.AsyncClient(timeout=httpx.Timeout(60.0)) as client:
+        response = await client.get(image_url)
+        response.raise_for_status()
+        img_data = response.content
+
+    # Save to file
+    if save_path is None:
+        save_path = DEFAULT_OUTPUT_DIR / f"generated_{len(list(DEFAULT_OUTPUT_DIR.glob('*')))}.png"
+
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(save_path, "wb") as f:
+        f.write(img_data)
+
+    return {
+        "image_path": str(save_path.absolute()),
+        "url": image_url,
+        "size": size,
+        "prompt": prompt,
+        "provider": "pollinations",
+        "model": model,
+    }
+
+
+async def generate_image_huggingface(
+    prompt: str,
+    size: str = "1024x1024",
+    save_path: Optional[Path] = None,
+    model: str = "black-forest-labs/FLUX.1-dev",
+) -> dict[str, Any]:
+    """
+    Generate image using Hugging Face Inference API (free tier available).
+
+    Args:
+        prompt: Text description of the image to generate
+        size: Image dimensions (note: not all models support custom sizes)
+        save_path: Optional path to save the generated image
+        model: HuggingFace model ID (default: "black-forest-labs/FLUX.1-dev")
+            Alternatives: "stabilityai/stable-diffusion-xl-base-1.0",
+                         "runwayml/stable-diffusion-v1-5"
+
+    Returns:
+        Dictionary with image_path, url, and metadata
+    """
+    api_key = get_api_key(ImageProvider.HUGGINGFACE)
+    if not api_key:
+        raise ValueError(
+            "HUGGINGFACE_API_KEY not found in environment variables. "
+            "Get your free API key from https://huggingface.co/settings/tokens"
+        )
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+    }
+
+    payload = {"inputs": prompt}
+
+    # Parse size for models that support it
+    width, height = map(int, size.split("x"))
+    if "FLUX" in model or "stable-diffusion" in model:
+        payload["parameters"] = {"width": width, "height": height}
+
+    api_url = f"https://api-inference.huggingface.co/models/{model}"
+
+    timeout = httpx.Timeout(120.0)  # HF can be slow on cold starts
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        response = await client.post(
+            api_url,
+            headers=headers,
+            json=payload,
+        )
+
+        if response.status_code == 503:
+            raise ValueError(
+                "Model is loading. Please try again in a few minutes. "
+                "This is common with HuggingFace free tier on cold starts."
+            )
+
+        response.raise_for_status()
+        img_data = response.content
+
+    # Save to file
+    if save_path is None:
+        save_path = DEFAULT_OUTPUT_DIR / f"generated_{len(list(DEFAULT_OUTPUT_DIR.glob('*')))}.png"
+
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(save_path, "wb") as f:
+        f.write(img_data)
+
+    return {
+        "image_path": str(save_path.absolute()),
+        "url": api_url,
+        "size": size,
+        "prompt": prompt,
+        "provider": "huggingface",
+        "model": model,
     }
 
 
@@ -294,12 +434,19 @@ async def list_tools() -> list[Tool]:
     return [
         Tool(
             name="generate_image",
-            description="""Generate an image using AI. Currently supports OpenAI's GPT-Image-1 model.
-            
-            Returns the path to the generated image file. The image is automatically saved to the 
+            description="""Generate an image using AI from multiple providers.
+
+            **Providers:**
+            - openai: OpenAI's GPT-Image-1 (requires OPENAI_API_KEY)
+            - pollinations: Pollinations.ai (FREE, no API key required!)
+            - huggingface: HuggingFace Inference API (FREE tier available, requires HUGGINGFACE_API_KEY)
+
+            Returns the path to the generated image file. Images are automatically saved to the
             generated_images directory.
-            
-            Supported sizes for OpenAI: 1024x1024 (square), 1024x1536 (portrait), 1536x1024 (landscape)""",
+
+            **Size formats:**
+            - OpenAI: 1024x1024, 1024x1536, 1536x1024
+            - Pollinations/HuggingFace: Any size in format WIDTHxHEIGHT (e.g., "512x512", "1024x768")""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -309,19 +456,26 @@ async def list_tools() -> list[Tool]:
                     },
                     "provider": {
                         "type": "string",
-                        "enum": ["openai"],
-                        "default": "openai",
-                        "description": "Image generation provider to use",
+                        "enum": ["openai", "pollinations", "huggingface"],
+                        "default": "pollinations",
+                        "description": "Image generation provider (pollinations is free with no API key!)",
                     },
                     "size": {
                         "type": "string",
-                        "enum": SUPPORTED_OPENAI_SIZES,
                         "default": "1024x1024",
-                        "description": "Image dimensions",
+                        "description": "Image dimensions in WIDTHxHEIGHT format (e.g., '1024x1024', '512x768')",
                     },
                     "output_filename": {
                         "type": "string",
                         "description": "Optional custom filename for the generated image",
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "Optional: AI model to use (for pollinations: 'flux' or 'turbo'; for huggingface: model ID)",
+                    },
+                    "seed": {
+                        "type": "integer",
+                        "description": "Optional: Random seed for reproducibility (pollinations only)",
                     },
                 },
                 "required": ["prompt"],
@@ -420,7 +574,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     try:
         if name == "generate_image":
             prompt = arguments["prompt"]
-            provider = arguments.get("provider", "openai")
+            provider = arguments.get("provider", "pollinations")  # Default to free provider
             size = arguments.get("size", "1024x1024")
             output_filename = arguments.get("output_filename")
 
@@ -430,6 +584,13 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
 
             if provider == "openai":
                 result = await generate_image_openai(prompt, size, save_path)
+            elif provider == "pollinations":
+                model = arguments.get("model", "flux")
+                seed = arguments.get("seed")
+                result = await generate_image_pollinations(prompt, size, save_path, seed, model)
+            elif provider == "huggingface":
+                model = arguments.get("model", "black-forest-labs/FLUX.1-dev")
+                result = await generate_image_huggingface(prompt, size, save_path, model)
             else:
                 raise ValueError(f"Unsupported provider: {provider}")
 

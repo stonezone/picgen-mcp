@@ -1,12 +1,15 @@
 # Image Generation MCP Server
 
-A Model Context Protocol (MCP) server that provides AI image generation and manipulation capabilities. Enables Claude and other MCP clients to generate images using OpenAI's GPT-Image-1 model and perform various image processing operations.
+A Model Context Protocol (MCP) server that provides AI image generation and manipulation capabilities. Enables Claude and other MCP clients to generate images using multiple AI providers including **Pollinations.ai (FREE!)**, OpenAI's GPT-Image-1, and HuggingFace models. Also includes powerful image processing operations.
 
 ## Features
 
 ### Image Generation
-- **OpenAI GPT-Image-1**: Generate high-quality images from text prompts
-- Multiple aspect ratios: square (1024x1024), portrait (1024x1536), landscape (1536x1024)
+- **Multiple AI Providers**:
+  - **Pollinations.ai** (FREE, no API key required!) - Unlimited image generation
+  - **OpenAI GPT-Image-1** - High-quality images (requires API key)
+  - **HuggingFace Inference API** - Free tier available with FLUX and Stable Diffusion models
+- Flexible image sizes: any dimensions in WIDTHxHEIGHT format (e.g., 1024x1024, 512x768, etc.)
 - Automatic image saving and management
 
 ### Image Manipulation
@@ -18,7 +21,10 @@ A Model Context Protocol (MCP) server that provides AI image generation and mani
 
 ### Prerequisites
 - Python 3.10 or higher
-- OpenAI API key
+- API keys (optional, depending on provider):
+  - **No API key needed** for Pollinations.ai (recommended for getting started!)
+  - OpenAI API key for OpenAI provider
+  - HuggingFace API token for HuggingFace provider (free tier available)
 
 ### Setup
 
@@ -38,12 +44,20 @@ Or for development:
 pip install -e ".[dev]"
 ```
 
-3. **Set up environment variables**
+3. **Set up environment variables (if needed)**
 
-Create a `.env` file or export variables:
+For **Pollinations.ai**: No API key required! You can start using it immediately.
+
+For **OpenAI** (optional):
 ```bash
 export OPENAI_API_KEY="your-api-key-here"
 export OPENAI_ORG_ID="your-org-id"  # Optional
+```
+
+For **HuggingFace** (optional, free tier available):
+```bash
+export HUGGINGFACE_API_KEY="your-hf-token-here"
+# Get free token at: https://huggingface.co/settings/tokens
 ```
 
 ## Configuration
@@ -52,6 +66,21 @@ export OPENAI_ORG_ID="your-org-id"  # Optional
 
 Add to your Claude Desktop config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
+**Option 1: Use Pollinations.ai (FREE, no API key needed!)**
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "python",
+      "args": [
+        "/absolute/path/to/imagegenMCP/src/imagegen_mcp/server.py"
+      ]
+    }
+  }
+}
+```
+
+**Option 2: With OpenAI and/or HuggingFace API keys**
 ```json
 {
   "mcpServers": {
@@ -62,7 +91,7 @@ Add to your Claude Desktop config file (`~/Library/Application Support/Claude/cl
       ],
       "env": {
         "OPENAI_API_KEY": "your-api-key-here",
-        "OPENAI_ORG_ID": "your-org-id"
+        "HUGGINGFACE_API_KEY": "your-hf-token-here"
       }
     }
   }
@@ -93,8 +122,23 @@ Make sure environment variables are set in your shell.
 Once configured, Claude can use these tools:
 
 ### Generate an Image
+
+**Using Pollinations.ai (FREE, default)**:
 ```
 Claude, generate an image of a serene Hawaiian beach at sunset with palm trees
+```
+
+**Using a specific provider**:
+```
+Claude, generate an image using the pollinations provider: a futuristic city skyline
+Claude, generate an image using openai: a mountain landscape
+Claude, generate an image using huggingface: a portrait of a cat
+```
+
+**Custom sizes**:
+```
+Claude, generate a 512x768 portrait of a sunset beach scene
+Claude, generate a 1920x1080 landscape wallpaper of mountains
 ```
 
 ### Resize an Image
@@ -115,14 +159,19 @@ Claude, what are the dimensions and format of this image?
 ## Available Tools
 
 ### `generate_image`
-Generate images using AI models.
+Generate images using AI models from multiple providers.
 
 **Parameters:**
 - `prompt` (required): Detailed description of the image
-- `provider` (optional): Image generation provider (default: "openai")
-- `size` (optional): Image dimensions (default: "1024x1024")
-  - Options: "1024x1024", "1024x1536", "1536x1024"
+- `provider` (optional): Image generation provider (default: "pollinations")
+  - Options: "pollinations" (FREE), "openai", "huggingface"
+- `size` (optional): Image dimensions in WIDTHxHEIGHT format (default: "1024x1024")
+  - Examples: "512x512", "1024x768", "1920x1080", "1024x1536"
 - `output_filename` (optional): Custom filename for the generated image
+- `model` (optional): AI model to use
+  - Pollinations: "flux" (default) or "turbo"
+  - HuggingFace: model ID (default: "black-forest-labs/FLUX.1-dev")
+- `seed` (optional): Random seed for reproducibility (Pollinations only)
 
 **Returns:**
 ```json
@@ -131,7 +180,8 @@ Generate images using AI models.
   "url": "https://...",
   "size": "1024x1024",
   "prompt": "...",
-  "provider": "openai"
+  "provider": "pollinations",
+  "model": "flux"
 }
 ```
 
@@ -231,25 +281,42 @@ pytest
 
 ## Future Enhancements
 
+- [x] Add support for Pollinations.ai (FREE!)
+- [x] Add support for HuggingFace models
 - [ ] Add support for Stability AI
-- [ ] Add support for HuggingFace models
 - [ ] Add more image manipulation tools (crop, rotate, filters)
 - [ ] Add batch image generation
 - [ ] Add image upscaling capabilities
 - [ ] Add image-to-image transformation
 - [ ] Cache generated images with prompt hashing
+- [ ] Add support for Replicate models
+- [ ] Add image editing capabilities (inpainting, outpainting)
 
 ## Troubleshooting
 
-### API Key Issues
+### Getting Started
+- **Try Pollinations.ai first!** No API key needed, completely free
+- If you encounter any issues, try using a different provider
+
+### Provider-Specific Issues
+
+**Pollinations.ai:**
+- No authentication required - if it fails, it's likely a network issue
+- Very fast and reliable
+- No rate limits
+
+**OpenAI:**
 - Ensure `OPENAI_API_KEY` is set in environment variables
 - Verify the key is valid and has sufficient credits
 - Check that the key has access to the GPT-Image-1 model
+- Prompts must follow OpenAI's content policy
 
-### Image Generation Errors
-- Prompts must be descriptive and follow OpenAI's content policy
-- Check API rate limits if getting timeout errors
-- Ensure you have sufficient API quota
+**HuggingFace:**
+- Get free API token from: https://huggingface.co/settings/tokens
+- Set `HUGGINGFACE_API_KEY` in environment variables
+- Free tier has monthly credit limits
+- Models may be slow on first request (cold start) - wait 1-2 minutes
+- If you get 503 errors, the model is loading - try again after a minute
 
 ### File Permission Errors
 - Verify the `generated_images/` directory is writable
