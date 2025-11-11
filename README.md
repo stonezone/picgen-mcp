@@ -1,187 +1,286 @@
-# Image Generation MCP Server
+# 🎨 Image Generation MCP Server
 
-A Model Context Protocol (MCP) server that provides AI image generation and manipulation capabilities. Enables Claude and other MCP clients to generate images using multiple AI providers including **Pollinations.ai (FREE!)**, OpenAI's GPT-Image-1, and HuggingFace models. Also includes powerful image processing operations.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
+[![npm version](https://img.shields.io/npm/v/@stonezone/imagegen-mcp.svg)](https://www.npmjs.com/package/@stonezone/imagegen-mcp)
 
-## Features
+A powerful Model Context Protocol (MCP) server that enables AI assistants (Claude, Gemini, Cody) to generate and manipulate images using multiple providers. **Start generating images for FREE** with Pollinations.ai—no API key required!
 
-### Image Generation
-- **Multiple AI Providers**:
-  - **Pollinations.ai** (FREE, no API key required!) - Unlimited image generation
-  - **OpenAI GPT-Image-1** - High-quality images (requires API key)
-  - **HuggingFace Inference API** - Free tier available with FLUX and Stable Diffusion models
-- Flexible image sizes: any dimensions in WIDTHxHEIGHT format (e.g., 1024x1024, 512x768, etc.)
-- Automatic image saving and management
+## ✨ Features
 
-### Image Manipulation
-- **Resize**: Scale images while maintaining or ignoring aspect ratio
-- **Format Conversion**: Convert between PNG, JPEG, WEBP, and GIF
-- **Metadata**: Extract detailed image information (dimensions, format, size)
+### 🎨 Multiple AI Image Providers
 
-## Installation
+| Provider | Cost | API Key | Quality | Speed | Notes |
+|----------|------|---------|---------|-------|-------|
+| **Pollinations.ai** | ✅ FREE | ❌ None | ⭐⭐⭐⭐ | ⚡ Fast | **Recommended** - Unlimited usage! |
+| **HuggingFace** | ✅ FREE Tier | ✅ Required | ⭐⭐⭐⭐⭐ | 🐢 Slow | FLUX & Stable Diffusion models |
+| **OpenAI** | 💰 Paid | ✅ Required | ⭐⭐⭐⭐⭐ | ⚡ Fast | GPT-Image-1 (DALL-E) |
 
-### Prerequisites
-- Python 3.10 or higher
-- API keys (optional, depending on provider):
-  - **No API key needed** for Pollinations.ai (recommended for getting started!)
-  - OpenAI API key for OpenAI provider
-  - HuggingFace API token for HuggingFace provider (free tier available)
+### 🛠️ Image Manipulation Tools
+- **Resize**: Scale images with aspect ratio control
+- **Format Conversion**: PNG ↔ JPEG ↔ WEBP ↔ GIF
+- **Metadata Extraction**: Dimensions, format, file size
+- **Custom Dimensions**: Any size (512x512, 1920x1080, etc.)
 
-### Setup
+### 🔧 Supported Platforms
+- ✅ Claude Desktop
+- ✅ Claude Code (CLI)
+- ✅ Sourcegraph Cody (VS Code)
+- ✅ Gemini CLI
+- ✅ Any MCP-compatible client
 
-1. **Clone the repository**
+---
+
+## 📦 Installation
+
+### Option 1: NPM (Recommended)
+
 ```bash
+# Install globally
+npm install -g @stonezone/imagegen-mcp
+
+# Or install locally in your project
+npm install @stonezone/imagegen-mcp
+```
+
+### Option 2: Python (pip)
+
+```bash
+# Clone the repository
 git clone https://github.com/stonezone/imagegenMCP.git
 cd imagegenMCP
-```
 
-2. **Install dependencies**
-```bash
+# Install with pip
 pip install -e .
-```
 
-Or for development:
-```bash
+# Or for development
 pip install -e ".[dev]"
 ```
 
-3. **Set up environment variables (if needed)**
+### Option 3: Direct from GitHub
 
-For **Pollinations.ai**: No API key required! You can start using it immediately.
-
-For **OpenAI** (optional):
 ```bash
-export OPENAI_API_KEY="your-api-key-here"
-export OPENAI_ORG_ID="your-org-id"  # Optional
+pip install git+https://github.com/stonezone/imagegenMCP.git
 ```
 
-For **HuggingFace** (optional, free tier available):
-```bash
-export HUGGINGFACE_API_KEY="your-hf-token-here"
-# Get free token at: https://huggingface.co/settings/tokens
-```
+---
 
-## Configuration
+## 🔑 API Keys (Optional)
 
-### Claude Desktop
+### Pollinations.ai (Default - FREE!)
+**No API key needed!** This is the default provider and works immediately after installation.
 
-Add to your Claude Desktop config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+### HuggingFace (Optional - FREE Tier)
+1. Create a free account at [huggingface.co](https://huggingface.co)
+2. Get your token: [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+3. Set environment variable:
+   ```bash
+   export HUGGINGFACE_API_KEY="your-token-here"
+   ```
 
-**Option 1: Use Pollinations.ai (FREE, no API key needed!)**
+### OpenAI (Optional - Paid)
+1. Get API key from [platform.openai.com](https://platform.openai.com/api-keys)
+2. Set environment variable:
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+---
+
+## ⚙️ Configuration
+
+### 🖥️ Claude Desktop
+
+**Location:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
+
+#### With NPM Installation:
 ```json
 {
   "mcpServers": {
     "imagegen": {
-      "command": "python",
-      "args": [
-        "/absolute/path/to/imagegenMCP/src/imagegen_mcp/server.py"
-      ]
+      "command": "npx",
+      "args": ["@stonezone/imagegen-mcp"]
     }
   }
 }
 ```
 
-**Option 2: With OpenAI and/or HuggingFace API keys**
+#### With Python Installation:
 ```json
 {
   "mcpServers": {
     "imagegen": {
       "command": "python",
-      "args": [
-        "/absolute/path/to/imagegenMCP/src/imagegen_mcp/server.py"
-      ],
+      "args": ["/absolute/path/to/imagegenMCP/src/imagegen_mcp/server.py"]
+    }
+  }
+}
+```
+
+#### With API Keys (Optional):
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "npx",
+      "args": ["@stonezone/imagegen-mcp"],
       "env": {
-        "OPENAI_API_KEY": "your-api-key-here",
-        "HUGGINGFACE_API_KEY": "your-hf-token-here"
+        "OPENAI_API_KEY": "sk-...",
+        "HUGGINGFACE_API_KEY": "hf_..."
       }
     }
   }
 }
 ```
 
-### Claude Code
+**Restart Claude Desktop** after editing the config file.
 
-Add to `.claudecode/config.json` in your project:
+---
+
+### 💻 Claude Code (CLI)
+
+**Location:** `.claudecode/config.json` in your project or `~/.config/claudecode/config.json` globally
 
 ```json
 {
   "mcpServers": {
     "imagegen": {
-      "command": "python",
-      "args": [
-        "/absolute/path/to/imagegenMCP/src/imagegen_mcp/server.py"
-      ]
+      "command": "npx",
+      "args": ["@stonezone/imagegen-mcp"]
     }
   }
 }
 ```
 
-Make sure environment variables are set in your shell.
-
-## Usage
-
-Once configured, Claude can use these tools:
-
-### Generate an Image
-
-**Using Pollinations.ai (FREE, default)**:
-```
-Claude, generate an image of a serene Hawaiian beach at sunset with palm trees
+Or set environment variables in your shell:
+```bash
+export OPENAI_API_KEY="sk-..."
+export HUGGINGFACE_API_KEY="hf_..."
 ```
 
-**Using a specific provider**:
-```
-Claude, generate an image using the pollinations provider: a futuristic city skyline
-Claude, generate an image using openai: a mountain landscape
-Claude, generate an image using huggingface: a portrait of a cat
+---
+
+### 🤖 Sourcegraph Cody (VS Code)
+
+**Location:** VS Code Settings (JSON)
+
+Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), type "Preferences: Open User Settings (JSON)"
+
+```json
+{
+  "openctx.providers": {
+    "https://openctx.org/npm/@openctx/provider-modelcontextprotocol": {
+      "imagegen": {
+        "command": "npx",
+        "args": ["@stonezone/imagegen-mcp"],
+        "env": {
+          "OPENAI_API_KEY": "sk-...",
+          "HUGGINGFACE_API_KEY": "hf_..."
+        }
+      }
+    }
+  }
+}
 ```
 
-**Custom sizes**:
-```
-Claude, generate a 512x768 portrait of a sunset beach scene
-Claude, generate a 1920x1080 landscape wallpaper of mountains
+**Note:** MCP works through Cody's agentic context gathering, not via @mentions.
+
+---
+
+### 🔮 Gemini CLI
+
+**Location:** `~/.gemini/settings.json` (global) or `.gemini/settings.json` (project)
+
+First, install Gemini CLI:
+```bash
+npm install -g @google/gemini-cli@latest
 ```
 
-### Resize an Image
-```
-Claude, resize the generated image to 512x512 pixels
+Then configure the MCP server:
+```json
+{
+  "mcpServers": {
+    "imagegen": {
+      "command": "npx",
+      "args": ["@stonezone/imagegen-mcp"],
+      "env": {
+        "OPENAI_API_KEY": "sk-...",
+        "HUGGINGFACE_API_KEY": "hf_..."
+      }
+    }
+  }
+}
 ```
 
-### Convert Format
+---
+
+## 🚀 Usage Examples
+
+### Generate an Image (FREE!)
+
 ```
-Claude, convert that image to JPEG format
+Generate an image of a serene Hawaiian beach at sunset with palm trees
+```
+*Uses Pollinations.ai by default—completely free!*
+
+### Specify Provider
+
+```
+Generate using huggingface: a futuristic cyberpunk cityscape
+Generate using openai: a professional headshot photo
+Generate using pollinations with turbo model: a cute cat
 ```
 
-### Get Image Information
+### Custom Sizes
+
 ```
-Claude, what are the dimensions and format of this image?
+Generate a 1920x1080 desktop wallpaper of mountains
+Generate a 512x768 portrait of a sunset
+Create a square 1024x1024 image of abstract art
 ```
 
-## Available Tools
+### Image Manipulation
+
+```
+Resize that image to 512x512 pixels
+Convert the image to JPEG format
+What are the dimensions and format of this image?
+Resize to width 800 maintaining aspect ratio
+```
+
+### Advanced Options
+
+```
+Generate with seed 12345: a landscape (reproducible results with Pollinations)
+Generate using huggingface model stabilityai/stable-diffusion-xl-base-1.0: a portrait
+```
+
+---
+
+## 🔧 Available Tools
 
 ### `generate_image`
-Generate images using AI models from multiple providers.
+Generate images using AI models.
 
 **Parameters:**
-- `prompt` (required): Detailed description of the image
-- `provider` (optional): Image generation provider (default: "pollinations")
-  - Options: "pollinations" (FREE), "openai", "huggingface"
-- `size` (optional): Image dimensions in WIDTHxHEIGHT format (default: "1024x1024")
-  - Examples: "512x512", "1024x768", "1920x1080", "1024x1536"
-- `output_filename` (optional): Custom filename for the generated image
-- `model` (optional): AI model to use
-  - Pollinations: "flux" (default) or "turbo"
-  - HuggingFace: model ID (default: "black-forest-labs/FLUX.1-dev")
+- `prompt` (required): Description of the image to generate
+- `provider` (optional): `"pollinations"` (default, FREE), `"openai"`, `"huggingface"`
+- `size` (optional): Image dimensions, e.g., `"1024x1024"`, `"512x768"`, `"1920x1080"`
+- `model` (optional):
+  - Pollinations: `"flux"` (default) or `"turbo"`
+  - HuggingFace: Model ID like `"black-forest-labs/FLUX.1-dev"`
 - `seed` (optional): Random seed for reproducibility (Pollinations only)
+- `output_filename` (optional): Custom filename
 
 **Returns:**
 ```json
 {
-  "image_path": "/absolute/path/to/generated_images/image.png",
+  "image_path": "/path/to/generated_images/image.png",
   "url": "https://...",
   "size": "1024x1024",
   "prompt": "...",
-  "provider": "pollinations",
-  "model": "flux"
+  "provider": "pollinations"
 }
 ```
 
@@ -189,80 +288,166 @@ Generate images using AI models from multiple providers.
 Resize an existing image.
 
 **Parameters:**
-- `image_path` (required): Path to the image to resize
+- `image_path` (required): Path to the image
 - `width` (optional): Target width in pixels
 - `height` (optional): Target height in pixels
 - `maintain_aspect` (optional): Keep aspect ratio (default: true)
 - `output_path` (optional): Custom output path
 
-**Returns:**
-```json
-{
-  "image_path": "/path/to/resized_image.png",
-  "original_size": [1024, 1024],
-  "new_size": [512, 512]
-}
-```
-
 ### `convert_image_format`
 Convert image to different format.
 
 **Parameters:**
-- `image_path` (required): Path to the source image
-- `target_format` (required): Target format (PNG, JPEG, WEBP, GIF)
-- `output_path` (optional): Custom output path
+- `image_path` (required): Path to source image
+- `target_format` (required): `"PNG"`, `"JPEG"`, `"WEBP"`, or `"GIF"`
 - `quality` (optional): Quality for lossy formats (1-100, default: 95)
-
-**Returns:**
-```json
-{
-  "image_path": "/path/to/converted_image.jpg",
-  "format": "JPEG",
-  "original_format": "PNG"
-}
-```
+- `output_path` (optional): Custom output path
 
 ### `get_image_info`
-Get image metadata and information.
+Get image metadata.
 
 **Parameters:**
-- `image_path` (required): Path to the image file
+- `image_path` (required): Path to the image
 
-**Returns:**
-```json
-{
-  "path": "/absolute/path/to/image.png",
-  "size": [1024, 1024],
-  "width": 1024,
-  "height": 1024,
-  "format": "PNG",
-  "mode": "RGB",
-  "file_size_bytes": 1048576
-}
+---
+
+## 🧪 Testing
+
+Run the test suite:
+```bash
+pytest
 ```
 
-## Project Structure
+Test image generation directly:
+```bash
+python -c "
+import asyncio
+from pathlib import Path
+from src.imagegen_mcp.server import generate_image_pollinations
+
+async def test():
+    result = await generate_image_pollinations(
+        prompt='a red circle on white background',
+        size='256x256'
+    )
+    print(f'Success! Image saved to: {result[\"image_path\"]}')
+
+asyncio.run(test())
+"
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Getting Started
+- ✅ **Try Pollinations.ai first** - No setup needed, completely free
+- If you see errors, check which provider you're using
+- Make sure Python 3.10+ is installed: `python --version`
+
+### Provider-Specific Issues
+
+#### Pollinations.ai (Recommended)
+- ✅ No API key needed
+- ✅ No rate limits
+- ✅ Very fast and reliable
+- ❌ If it fails, check your internet connection
+
+#### HuggingFace
+- Get free token: [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+- Free tier has monthly credit limits
+- **Cold starts:** First request may take 1-2 minutes (model loading)
+- If you get `503 Service Unavailable`, wait a minute and try again
+- Error `402 Payment Required`: You've exceeded monthly free credits
+
+#### OpenAI
+- Requires paid API key from [platform.openai.com](https://platform.openai.com/api-keys)
+- Check your API quota and billing
+- Prompts must follow OpenAI's content policy
+- Model name: `gpt-image-1`
+
+### Common Issues
+
+**"Command not found" or "Module not found"**
+```bash
+# For NPM installation
+npm install -g @stonezone/imagegen-mcp
+
+# For Python installation
+pip install -e .
+```
+
+**"Permission denied"**
+```bash
+# Make sure the server script is executable
+chmod +x src/imagegen_mcp/server.py
+```
+
+**Images not saving**
+```bash
+# Check the generated_images directory exists and is writable
+mkdir -p generated_images
+chmod 755 generated_images
+```
+
+**Python version issues**
+```bash
+# Check Python version (must be 3.10+)
+python --version
+
+# Use python3 if needed
+python3 --version
+```
+
+---
+
+## 📁 Project Structure
 
 ```
 imagegenMCP/
 ├── src/
 │   └── imagegen_mcp/
 │       ├── __init__.py
-│       └── server.py          # Main MCP server implementation
-├── generated_images/          # Generated images directory (auto-created)
-├── pyproject.toml            # Project configuration
-├── README.md                 # This file
-└── .gitignore
+│       └── server.py          # Main MCP server
+├── bin/
+│   └── imagegen-mcp.js        # NPM executable wrapper
+├── generated_images/          # Output directory (auto-created)
+├── tests/                     # Test suite
+├── package.json               # NPM package config
+├── pyproject.toml            # Python package config
+├── README.md
+├── LICENSE
+└── CHANGELOG.md
 ```
 
-## Development
+---
 
-### Code Style
-- **Formatter**: Black (line length: 100)
-- **Linter**: Ruff
-- **Type Checker**: MyPy
+## 🔄 Updating
 
-### Run formatters and linters
+### NPM Installation
+```bash
+npm update -g @stonezone/imagegen-mcp
+```
+
+### Python Installation
+```bash
+cd imagegenMCP
+git pull
+pip install -e .
+```
+
+---
+
+## 🛠️ Development
+
+### Setup Development Environment
+```bash
+git clone https://github.com/stonezone/imagegenMCP.git
+cd imagegenMCP
+pip install -e ".[dev]"
+```
+
+### Code Quality Tools
 ```bash
 # Format code
 black src/
@@ -270,72 +455,101 @@ black src/
 # Lint code
 ruff check src/
 
-# Type check
+# Type checking
 mypy src/
-```
 
-### Testing
-```bash
+# Run tests
 pytest
 ```
 
-## Future Enhancements
+### Contributing
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Run tests and linting
+5. Commit: `git commit -m 'Add amazing feature'`
+6. Push: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-- [x] Add support for Pollinations.ai (FREE!)
-- [x] Add support for HuggingFace models
-- [ ] Add support for Stability AI
-- [ ] Add more image manipulation tools (crop, rotate, filters)
-- [ ] Add batch image generation
-- [ ] Add image upscaling capabilities
-- [ ] Add image-to-image transformation
-- [ ] Cache generated images with prompt hashing
-- [ ] Add support for Replicate models
-- [ ] Add image editing capabilities (inpainting, outpainting)
+---
 
-## Troubleshooting
+## 🗺️ Roadmap
 
-### Getting Started
-- **Try Pollinations.ai first!** No API key needed, completely free
-- If you encounter any issues, try using a different provider
+- [x] Pollinations.ai provider (FREE!)
+- [x] HuggingFace Inference API
+- [x] OpenAI GPT-Image-1
+- [x] NPM package distribution
+- [x] Multiple platform support
+- [ ] Stability AI integration
+- [ ] Replicate.com provider
+- [ ] Image-to-image transformation
+- [ ] Batch image generation
+- [ ] Image upscaling
+- [ ] Advanced manipulation (crop, rotate, filters)
+- [ ] Prompt template library
+- [ ] Image caching system
 
-### Provider-Specific Issues
+---
 
-**Pollinations.ai:**
-- No authentication required - if it fails, it's likely a network issue
-- Very fast and reliable
-- No rate limits
+## 📊 Comparison: Why This MCP Server?
 
-**OpenAI:**
-- Ensure `OPENAI_API_KEY` is set in environment variables
-- Verify the key is valid and has sufficient credits
-- Check that the key has access to the GPT-Image-1 model
-- Prompts must follow OpenAI's content policy
+| Feature | This Server | Alternatives |
+|---------|-------------|--------------|
+| **Free Provider** | ✅ Pollinations.ai (unlimited) | ❌ Usually paid only |
+| **Multiple Providers** | ✅ 3 providers | ⚠️ Usually 1 |
+| **No API Key to Start** | ✅ Works immediately | ❌ API keys required |
+| **Custom Sizes** | ✅ Any dimensions | ⚠️ Limited options |
+| **Image Manipulation** | ✅ Resize, convert, info | ❌ Generation only |
+| **NPM Distribution** | ✅ Easy install | ⚠️ Manual setup |
+| **Multi-Platform** | ✅ 4+ platforms | ⚠️ Limited |
 
-**HuggingFace:**
-- Get free API token from: https://huggingface.co/settings/tokens
-- Set `HUGGINGFACE_API_KEY` in environment variables
-- Free tier has monthly credit limits
-- Models may be slow on first request (cold start) - wait 1-2 minutes
-- If you get 503 errors, the model is loading - try again after a minute
+---
 
-### File Permission Errors
-- Verify the `generated_images/` directory is writable
-- Check that output paths are accessible
+## 📄 License
 
-## License
+MIT License - see [LICENSE](LICENSE) file for details.
 
-MIT
+---
 
-## Contributing
+## 👤 Author
 
-Contributions welcome! Please feel free to submit a Pull Request.
+**Zack Jordan**
 
-## Author
+- GitHub: [@stonezone](https://github.com/stonezone)
+- Repository: [imagegenMCP](https://github.com/stonezone/imagegenMCP)
 
-Zack Jordan
+---
 
-## Links
+## 🙏 Acknowledgments
 
-- [GitHub Repository](https://github.com/stonezone/imagegenMCP)
-- [OpenAI API Documentation](https://platform.openai.com/docs/guides/images)
-- [MCP Protocol](https://modelcontextprotocol.io/)
+- [Anthropic](https://www.anthropic.com/) for the Model Context Protocol
+- [Pollinations.ai](https://pollinations.ai/) for free image generation
+- [HuggingFace](https://huggingface.co/) for their Inference API
+- [OpenAI](https://openai.com/) for GPT-Image-1
+
+---
+
+## 📚 Resources
+
+- [MCP Documentation](https://modelcontextprotocol.io/)
+- [OpenAI Images API](https://platform.openai.com/docs/guides/images)
+- [HuggingFace Inference API](https://huggingface.co/docs/api-inference/)
+- [Pollinations.ai Docs](https://pollinations.ai/)
+
+---
+
+## ⭐ Star History
+
+If you find this project useful, please consider giving it a star on GitHub! It helps others discover the project.
+
+---
+
+## 🤝 Support
+
+- 📫 Issues: [GitHub Issues](https://github.com/stonezone/imagegenMCP/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/stonezone/imagegenMCP/discussions)
+- 📖 Documentation: [Wiki](https://github.com/stonezone/imagegenMCP/wiki)
+
+---
+
+**Made with ❤️ for the MCP community**

@@ -10,15 +10,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Pollinations.ai provider** - FREE unlimited image generation, no API key required!
 - **HuggingFace Inference API provider** - Free tier with FLUX and Stable Diffusion models
+- **NPM package distribution** - Easy installation via npm/npx
 - Support for custom image dimensions in any WIDTHxHEIGHT format
 - Model selection for Pollinations (flux, turbo) and HuggingFace (any model ID)
 - Seed parameter for reproducible image generation (Pollinations)
-- Enhanced documentation with multi-provider examples
+- Multi-platform configuration guides:
+  - Claude Desktop
+  - Claude Code (CLI)
+  - Sourcegraph Cody (VS Code)
+  - Gemini CLI
+- Comprehensive README with badges, troubleshooting, and examples
+- NPM executable wrapper for cross-platform compatibility
 
 ### Changed
 - Default provider changed to Pollinations.ai (free, no API key needed)
 - Improved error messages for HuggingFace cold starts
-- Updated README with comprehensive provider comparison
+- Updated README with comprehensive installation instructions for all platforms
+- Enhanced documentation with provider comparison table
+- Added professional badges and shields to README
+
+### Fixed
+- Improved error handling for provider-specific issues
+- Better guidance for cold start delays with HuggingFace
 
 ## [0.1.0] - 2025-11-11
 

@@ -1,0 +1,53 @@
+{
+  "name": "@stonezone/imagegen-mcp",
+  "version": "0.2.0",
+  "description": "MCP server for AI image generation with multiple free providers (Pollinations.ai, HuggingFace, OpenAI)",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "image-generation",
+    "ai",
+    "claude",
+    "anthropic",
+    "pollinations",
+    "huggingface",
+    "openai",
+    "dalle"
+  ],
+  "author": "Zack Jordan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stonezone/imagegenMCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stonezone/imagegenMCP/issues"
+  },
+  "homepage": "https://github.com/stonezone/imagegenMCP#readme",
+  "main": "src/imagegen_mcp/server.py",
+  "bin": {
+    "imagegen-mcp": "bin/imagegen-mcp.js"
+  },
+  "scripts": {
+    "install": "pip install -e .",
+    "postinstall": "echo '\n✅ Image Generation MCP Server installed!\n\n📖 See README.md for configuration instructions\n'",
+    "start": "python src/imagegen_mcp/server.py",
+    "test": "pytest",
+    "lint": "ruff check src/",
+    "format": "black src/",
+    "typecheck": "mypy src/"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "peerDependencies": {
+    "python": ">=3.10"
+  },
+  "files": [
+    "src/",
+    "bin/",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml"
+  ]
+}
